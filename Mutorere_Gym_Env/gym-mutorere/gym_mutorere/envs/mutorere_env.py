@@ -9,7 +9,7 @@ class Case :
         self.id = id
         self.color = color
 
-class MuToRere(discrete.DiscreteEnv):
+class MuToRere(Env):
 	metadata = {'render.modes': ['human']}
 
 
@@ -18,12 +18,9 @@ class MuToRere(discrete.DiscreteEnv):
 		self.neighbors = [(4,2),(1,3),(2,6),(1,7),None,(3,9),(4,8),(7,9),(6,8)]
 		self.turn = 'b'
 		self.done = 0
-		self.add = [0, 0]
 
-		self.action_space = spaces.Discrete(9)
-
-		self.observation_space = spaces.Discrete(86)
-
+		self.stateSpacePlus = # Créer un liste de int avec tout les états faisables (spaces.Discrete(86))
+        self.possibleActions = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 	def checkNeighbors(self,id):
 		return not (self.searchCaseById(self.neighbors[id-1][0]).color == self.searchCaseById(self.neighbors[id-1][1]).color and self.searchCaseById(self.neighbors[id-1][0]).color == self.searchCaseById(id).color)
@@ -59,7 +56,6 @@ class MuToRere(discrete.DiscreteEnv):
 
 		return True
 
-
 	def checkEndConditions(self,player):
 		canMove = False
 		for i in range(1,10) :
@@ -68,6 +64,7 @@ class MuToRere(discrete.DiscreteEnv):
 
 	def step(self, id):
 		case = self.searchCaseById(id)
+
 		if id != 5 :
 			neighbors = (self.searchCaseById(self.neighbors[id-1][0]),self.searchCaseById(self.neighbors[id-1][1]))
 
@@ -89,7 +86,7 @@ class MuToRere(discrete.DiscreteEnv):
 					if a.id != 5 and a.color == 'o' :
 						a.color = case.color
 						case.color = 'o'
-		self.render()
+		# self.render()
 
 		# win = self.check()
 		# if(win):
@@ -116,3 +113,6 @@ class MuToRere(discrete.DiscreteEnv):
 	def render(self):
 		for row in self.state :
 			print(row[0].color + ' ' + row[1].color + ' ' + row[2].color)
+
+    def actionSpaceSample(self):
+        return np.random.choice(self.possibleActions)

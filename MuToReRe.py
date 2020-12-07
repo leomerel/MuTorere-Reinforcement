@@ -1,8 +1,6 @@
-class Case :
-
-    def __init__(self,id,color):
-        self.id = id
-        self.color = color
+from case import Case
+# from perception import Perception
+# from sarsaAgent import SarsaAgent
 
 class Board :
 
@@ -60,10 +58,10 @@ class Board :
 
 
     def checkEndConditions(self,player):
-    	canMove = False
-    	for i in range(1,10) :
-    		canMove |= self.checkMove(player,i)
-    	return canMove
+        canMove = False
+        for i in range(1,10) :
+            canMove |= self.checkMove(player,i)
+        return canMove
 
     def move(self,id):
 
@@ -111,7 +109,7 @@ if __name__ == "__main__" :
             nextMove = int(input("Black can choose his next move : "))
         else :
             nextMove = int(input("White can choose his next move : "))
-        
+
         isValid = board.checkMove(player,nextMove)
 
         if isValid :
@@ -140,5 +138,3 @@ if __name__ == "__main__" :
             print(winner + " won the game !")
             input("Press any key to exit the game")
             playing = False
-
-
