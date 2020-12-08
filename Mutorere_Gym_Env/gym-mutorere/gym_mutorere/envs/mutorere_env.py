@@ -1,15 +1,16 @@
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
-from gym.envs.toy_text import discrete
+import gym
+import numpy as np
 
 class Case :
 
-    def __init__(self,id,color):
-        self.id = id
-        self.color = color
+	def __init__(self,id,color):
+		self.id = id
+		self.color = color
 
-class MuToRere(Env):
+class MuToRere(gym.Env):
 	metadata = {'render.modes': ['human']}
 
 
@@ -17,10 +18,11 @@ class MuToRere(Env):
 		self.state = [[Case(7,'w'),Case(8,'w'),Case(9,'w')],[Case(4,'w'),Case(5,'o'),Case(6,'b')],[Case(1,'b'),Case(2,'b'),Case(3,'b')]]
 		self.neighbors = [(4,2),(1,3),(2,6),(1,7),None,(3,9),(4,8),(7,9),(6,8)]
 		self.turn = 'b'
-		self.done = 0
 
-		self.stateSpacePlus = # Créer un liste de int avec tout les états faisables (spaces.Discrete(86))
-        self.possibleActions = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+		self.stateSpacePlus = []
+		self.possibleActions = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+		self.stateSpacePlus.append(self.state)
 
 	def checkNeighbors(self,id):
 		return not (self.searchCaseById(self.neighbors[id-1][0]).color == self.searchCaseById(self.neighbors[id-1][1]).color and self.searchCaseById(self.neighbors[id-1][0]).color == self.searchCaseById(id).color)
@@ -62,7 +64,7 @@ class MuToRere(Env):
 			canMove |= self.checkMove(player,i)
 		return canMove
 
-	def step(self, id):
+	def step(self, id, player):
 		case = self.searchCaseById(id)
 
 		if id != 5 :
@@ -86,27 +88,21 @@ class MuToRere(Env):
 					if a.id != 5 and a.color == 'o' :
 						a.color = case.color
 						case.color = 'o'
-		# self.render()
 
-		# win = self.check()
-		# if(win):
-		# 	self.done = 1;
-		# 	print("Player ", win, " wins.", sep = "", end = "\n")
-		# 	self.add[win-1] = 1;
-		# 	if win == 1:
-		# 		self.reward = 100
-		# 	else:
-		# 		self.reward = -100
+		if self.state not in self.stateSpacePlus :
+			self.stateSpacePlus.append(self.state)
 
-		return [self.state, self.reward, self.done, self.add]
+		isWon = not self.checkEndConditions(self.otherPlayer(player))
+		reward = -1 if not isWon else 10
+
+
+		return [self.state, reward, isWon, None]
 
 	def reset(self):
 		self.state = [[Case(7,'w'),Case(8,'w'),Case(9,'w')],[Case(4,'w'),Case(5,'o'),Case(6,'b')],[Case(1,'b'),Case(2,'b'),Case(3,'b')]]
 		self.neighbors = [(4,2),(1,3),(2,6),(1,7),None,(3,9),(4,8),(7,9),(6,8)]
 		self.turn = 'b'
 		self.counter = 0
-		self.done = 0
-		self.add = [0, 0]
 		self.reward = 0
 		return self.state
 
@@ -114,5 +110,11 @@ class MuToRere(Env):
 		for row in self.state :
 			print(row[0].color + ' ' + row[1].color + ' ' + row[2].color)
 
-    def actionSpaceSample(self):
-        return np.random.choice(self.possibleActions)
+	def actionSpaceSample(self):
+		return np.random.choice(self.possibleActions)
+
+	def otherPlayer(self,player):
+		if player == 'b':
+			return 'w'
+		else :
+			return 'b'

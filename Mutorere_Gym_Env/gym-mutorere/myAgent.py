@@ -7,61 +7,73 @@ env = gym.make('mutorere-v0')
 env.reset() # reset environment to a new, random state
 env.render()
 
-#Initializing the Q-matrix
-Q = np.zeros((env.observation_space.n, env.action_space.n))
-
-
-#Function to choose the next action
-def choose_action(state):
-    action=0
-    if np.random.uniform(0, 1) < epsilon:
-        action = env.action_space.sample()
-    else:
-        action = np.argmax(Q[state, :])
-    return action
-
-#Function to learn the Q-value
-def update(state, state2, reward, action, action2):
-    predict = Q[state, action]
-    target = reward + gamma * Q[state2, action2]
-    Q[state, action] = Q[state, action] + alpha * (target - predict)
+def maxAction(Q, state, actions):
+	values = np.array([Q[state,a] for a in actions])
+	action = np.argmax(values)
+	return actions[action]
 
 if __name__ == '__main__':
 
-    # model hyperparameters
-    ALPHA = 0.1
-    GAMMA = 1.0
-    EPS = 1.0
+	# model hyperparameters
+	ALPHA = 0.1
+	GAMMA = 1.0
+	EPS = 1.0
 
-    Q = {}
-    for state in env.stateSpacePlus:
-        for action in env.possibleActions:
-            Q[state, action] = 0
+	Qw = {}
+	Qb = {}
+	# for state in env.stateSpacePlus:
+	#     for action in env.possibleActions:
+	#         Q[state, action] = 0
 
-    numGames = 50000
-    totalRewards = np.zeros(numGames)
-    for i in range(numGames):
-        if i % 5000 == 0:
-            print('starting game ', i)
-        done = False
-        epRewards = 0
-        observation = env.reset()
-        while not done:
-            rand = np.random.random()
-            action = maxAction(Q,observation, env.possibleActions) if rand < (1-EPS) \
-                                                    else env.actionSpaceSample()
-            observation_, reward, done, info = env.step(action)
-            epRewards += reward
+	numGames = 5000
+	totalRewardsWhite = np.zeros(numGames)
+	totalRewardsBlack = np.zeros(numGames)
+	for i in range(numGames):
+		if i % 1000 == 0:
+			print('starting game ', i)
+		done = False
+		player = 'w'
+		epRewardsWhite = 0
+		epRewardsBlack = 0
+		observation = env.reset()
+		while not done:
+			rand = np.random.random()
+			if player == 'b' :
+				action = maxAction(Qb,observation, env.possibleActions) if rand < (1-EPS) \
+														else env.actionSpaceSample()
 
-            action_ = maxAction(Q, observation_, env.possibleActions)
-            Q[observation,action] = Q[observation,action] + ALPHA*(reward + \
-                        GAMMA*Q[observation_,action_] - Q[observation,action])
-            observation = observation_
-        if EPS - 2 / numGames > 0:
-            EPS -= 2 / numGames
-        else:
-            EPS = 0
-        totalRewards[i] = epRewards
+				while not env.checkMove(player,int(action)):
+					epRewardsBlack -= 5
+					action = maxAction(Qb,observation, env.possibleActions) if rand < (1-EPS) \
+															else env.actionSpaceSample()
 
-    plt.plot(totalRewards)
-    plt.show()
+				observation_, reward, done, info = env.step(int(action),player)
+				epRewardsBlack += reward
+
+				action_ = maxAction(Qb, observation_, env.possibleActions)
+				Qb[observation,action] = Qb[observation,action] + ALPHA*(reward + \
+							GAMMA*Qb[observation_,action_] - Qb[observation,action])
+				observation = observation_
+			else :
+				action = maxAction(Qw,observation, env.possibleActions) if rand < (1-EPS) \
+														else env.actionSpaceSample()
+				observation_, reward, done, info = env.step(int(action),player)
+				epRewardsWhite += reward
+
+				action_ = maxAction(Qw, observation_, env.possibleActions)
+				Qw[observation,action] = Qw[observation,action] + ALPHA*(reward + \
+							GAMMA*Qw[observation_,action_] - Qw[observation,action])
+				observation = observation_
+
+		if EPS - 2 / numGames > 0: #exploration rate (plus il y a de games plus la q table est utilisée)
+			EPS -= 2 / numGames
+		else:
+			EPS = 0
+		totalRewardsWhite[i] = epRewardsWhite
+		totalRewardsBlack[i] = epRewardsBlack
+
+	fig1 = plt.fig()
+	fig1.plot(totalRewardsWhite)
+
+	fig2 = plt.fig()
+	fig2.plot(totalRewardsBlack)
