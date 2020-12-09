@@ -40,8 +40,4 @@ if __name__ == '__main__':
 											if countList.count('w') != 4 :
 												continue
 
-											if countList == ['b','b','b','w','o','b','w','w','w']:
-																				 print ("FOUND")
-
 											totalList.append([[Case(7,g),Case(8,h),Case(9,i)],[Case(4,d),Case(5,e),Case(6,f)],[Case(1,a),Case(2,b),Case(3,c)]])
-	print (len(totalList))
