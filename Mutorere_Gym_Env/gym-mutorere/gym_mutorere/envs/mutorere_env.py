@@ -70,6 +70,7 @@ class MuToRere(gym.Env):
 
 	def checkMove(self,player,id):
 		if not (id < 10 and id > 0):
+			#print("id not between 1 and 9")
 			return False
 
 		case = self.searchCaseById(id)
@@ -78,20 +79,21 @@ class MuToRere(gym.Env):
 			neighbors = (self.searchCaseById(self.neighbors[id-1][0]),self.searchCaseById(self.neighbors[id-1][1]))
 
 		if player != self.turn :
-			# print("not your turn")
+			#print("not your turn", player, self.turn)
 			return False
 
 		if player != case.color :
-			# print("wrong color")
+			#print("wrong color", player, case.color)
 			return False
 
 		if case.id != 5 :
 			if not self.checkNeighbors(case.id) :
+				#print("both neighbors are the same color", player, self.searchCaseById(id).color, self.searchCaseById(self.neighbors[id-1][1]).color, self.searchCaseById(self.neighbors[id-1][0]).color)
 				return False
 
 		if id != 5 :
 			if self.state[1][1].color != 'o' and neighbors[0].color != 'o' and neighbors[1].color != 'o' :
-				# print("no empty neighbors")
+				#print("no empty neighbors", player, self.state[1][1].color, neighbors[0].color, neighbors[1].color)
 				return False
 
 		return True
@@ -134,14 +136,15 @@ class MuToRere(gym.Env):
 			self.turn = self.otherPlayer(player)
 
 			isWon = not self.checkEndConditions(self.otherPlayer(player))
-			reward = -1 if not isWon else 0
+			reward = -1 if not isWon else 50
 
-
+			#print("Possible")
 			return [self.state, reward, isWon, isPossible]
 		else :
 			self.turn = self.otherPlayer(player)
 			isWon = not self.checkEndConditions(self.otherPlayer(player))
-			self.turn = self.otherPlayer(player)
+			self.turn = player
+			#print("Not possible")
 			reward = -5
 
 			return [self.state, reward, isWon, isPossible]
