@@ -1,7 +1,6 @@
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
-import gym
 import numpy as np
 
 class Case :
@@ -19,7 +18,7 @@ class MuToRere(gym.Env):
 		self.neighbors = [(4,2),(1,3),(2,6),(1,7),None,(3,9),(4,8),(7,9),(6,8)]
 		self.turn = 'b'
 
-		# Initialisation de la liste des états
+		# Initialisation of the list containing all the possible states
 		self.stateSpacePlus = []
 		colorList = ['o','b','w']
 
@@ -59,7 +58,7 @@ class MuToRere(gym.Env):
 
 		self.stateSpacePlus.append(self.state)
 
-	def checkNeighbors(self,id):
+	def checkNeighborsColor(self,id):
 		return not (self.searchCaseById(self.neighbors[id-1][0]).color == self.searchCaseById(self.neighbors[id-1][1]).color and self.searchCaseById(self.neighbors[id-1][0]).color == self.searchCaseById(id).color)
 
 	def searchCaseById(self,id):
@@ -87,7 +86,7 @@ class MuToRere(gym.Env):
 			return False
 
 		if case.id != 5 :
-			if not self.checkNeighbors(case.id) :
+			if not self.checkNeighborsColor(case.id) :
 				#print("both neighbors are the same color", player, self.searchCaseById(id).color, self.searchCaseById(self.neighbors[id-1][1]).color, self.searchCaseById(self.neighbors[id-1][0]).color)
 				return False
 
@@ -111,6 +110,7 @@ class MuToRere(gym.Env):
 
 		if isPossible :
 			if id != 5 :
+				#check where the empty case is (among the current state's 3 neighbors) and then move the player towards it
 				neighbors = (self.searchCaseById(self.neighbors[id-1][0]),self.searchCaseById(self.neighbors[id-1][1]))
 
 				if self.state[1][1].color == 'o' :
@@ -126,6 +126,7 @@ class MuToRere(gym.Env):
 					case.color = 'o'
 
 			else :
+				#check where the empty case is (among the current state's 9 neighbors) and then move the player towards it
 				for row in self.state :
 					for a in row :
 						if a.id != 5 and a.color == 'o' :
@@ -138,13 +139,11 @@ class MuToRere(gym.Env):
 			isWon = not self.checkEndConditions(self.otherPlayer(player))
 			reward = -1 if not isWon else 50
 
-			#print("Possible")
 			return [self.state, reward, isWon, isPossible]
 		else :
 			self.turn = self.otherPlayer(player)
 			isWon = not self.checkEndConditions(self.otherPlayer(player))
 			self.turn = player
-			#print("Not possible")
 			reward = -5
 
 			return [self.state, reward, isWon, isPossible]
@@ -161,7 +160,7 @@ class MuToRere(gym.Env):
 		for row in self.state :
 			print(row[0].color + ' ' + row[1].color + ' ' + row[2].color)
 
-	def actionSpaceSample(self):
+	def randomAction(self):
 		return np.random.choice(self.possibleActions)
 
 	def otherPlayer(self,player):

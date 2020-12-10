@@ -7,14 +7,11 @@ import time
 env = gym.make('mutorere-v0')
 
 env.reset() # reset environment to a new, random state
-# env.render()
 
 def maxAction(Q, state, actions):
+	#chooses the action that has the highest reward value
 	values = np.array([Q[state,a] for a in actions])
 	action = np.argmax(values)
-	#if state == "wwwowbbbb":
-		#print(values)
-	# print("maxAction")
 	return actions[action]
 
 def stateToString(state):
@@ -25,6 +22,11 @@ def stateToString(state):
 
 	return strState
 
+def moving_average(a, n=100) :
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
+
 if __name__ == '__main__':
 
 	# model hyperparameters
@@ -32,24 +34,21 @@ if __name__ == '__main__':
 	GAMMA = 0.95
 	EPS = 1.0
 
-	Qw = {}
+	numGames = 10000
+
+	#initialisation of the Q-table
 	Qb = {}
 	for state in env.stateSpacePlus:
 		for action in env.possibleActions:
-			Qw[stateToString(state), action] = 0
 			Qb[stateToString(state), action] = 0
 
-	numGames = 10000
-	totalRewardsWhite = np.zeros(numGames)
+	#storing data to display statistics and graphs in the end
 	totalRewardsBlack = np.zeros(numGames)
-
 	AIwins = 0
 	RandomWins = 0
+
 	startTime = time.time()
 	for i in range(numGames):
-		#if i < 100 :
-			#print("starting game ", i, time.time()-startTime)
-			#startTime = time.time()
 		if i < 1000 :
 			if i %100 == 0 :
 				print('starting game ', i, time.time()-startTime)
@@ -58,15 +57,15 @@ if __name__ == '__main__':
 			if i %1000 == 0 :
 				print('starting game ', i, time.time()-startTime)
 				startTime = time.time()
-		done = False
-		epRewardsWhite = 0
+
+		blackVictory = False
 		epRewardsBlack = 0
 		observation = env.reset()
 		observation = stateToString(observation)
 		turn = 0
 
 
-		while not done:
+		while not blackVictory:
 
 			if turn > 2000 :
 				break
@@ -74,54 +73,58 @@ if __name__ == '__main__':
 
 			# print("start AI turn")
 			turn +=1
-			#print()
 			action = maxAction(Qb,observation, env.possibleActions) if rand < (1-EPS) \
-													else env.actionSpaceSample()
+													else env.randomAction()
 
-			#print("turn: ",turn)
-			#print(action)
-
-			observation_, reward, done, info = env.step(int(action),'b')
+			observation_, blackReward, blackVictory, blackHasPlayed = env.step(int(action),'b')
 			observation_ = stateToString(observation_)
 
-			if done :
-				AIwins += 1
-				info = False
+			if blackVictory :
+				blackHasPlayed = False
 
-			#env.render()
-			# print()
-
-			if info :
+			if blackHasPlayed :
 				#Playing randomly
-				randomAction = env.actionSpaceSample()
+				randomAction = env.randomAction()
 
 				while not env.checkMove('w',int(randomAction)):
-					randomAction = env.actionSpaceSample()
+					randomAction = env.randomAction()
 
 				observation_, randomReward, randone, randomInfo = env.step(int(randomAction),'w')
 				observation_ = stateToString(observation_)
 
 				if randone :
-					RandomWins +=1
-					reward -= 50
+					blackReward -= 50
 				turn += 1
 
-			epRewardsBlack += reward
+			epRewardsBlack += blackReward
 			action_ = maxAction(Qb, observation_, env.possibleActions)
-			Qb[observation,action] = Qb[observation,action] + ALPHA*(reward + \
+			Qb[observation,action] = Qb[observation,action] + ALPHA*(blackReward + \
 						GAMMA*Qb[observation_,action_] - Qb[observation,action])
 			observation = observation_
 
-		if EPS - 2 / 5000 > 0: #exploration rate (plus il y a de games plus la q table est utilisée)
+		if EPS - 2 / 5000 > 0:
 			EPS -= 2 / 5000
 		else:
+			if blackVictory :
+				AIwins += 1
+			elif randone :
+				RandomWins +=1
 			EPS = 0
-		totalRewardsWhite[i] = epRewardsWhite
+
 		totalRewardsBlack[i] = epRewardsBlack
+		if i % 100 == 0 and i != 0:
+			mean = np.mean(totalRewardsBlack[(i-100):(i)])
+
 
 	print()
 	print("AI ", AIwins)
 	print("Random ", RandomWins)
+	print("Winrate ", RandomWins/AIwins if RandomWins!=0 else 100, "%")
 
-	plt.plot(totalRewardsBlack)
+
+	plt.plot(totalRewardsBlack[:len(moving_average(totalRewardsBlack,500))], marker='.', linestyle='',label='total reward per epoch')
+	plt.plot(moving_average(totalRewardsBlack,500),label = 'reward mean')
+	plt.legend(loc='center right')
+	plt.xlabel('epoch')
+	plt.ylabel('reward')
 	plt.show()
