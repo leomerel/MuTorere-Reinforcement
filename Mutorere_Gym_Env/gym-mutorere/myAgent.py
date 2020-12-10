@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
 	# model hyperparameters
 	ALPHA = 0.1
-	GAMMA = 1.0
+	GAMMA = 0.95
 	EPS = 1.0
 
 	Qw = {}
@@ -47,19 +47,18 @@ if __name__ == '__main__':
 	RandomWins = 0
 	startTime = time.time()
 	for i in range(numGames):
-		if i < 100 :
+		#if i < 100 :
 			#print("starting game ", i, time.time()-startTime)
-			startTime = time.time()
-		elif i < 1000 :
+			#startTime = time.time()
+		if i < 1000 :
 			if i %100 == 0 :
-				#print('starting game ', i, time.time()-startTime)
+				print('starting game ', i, time.time()-startTime)
 				startTime = time.time()
 		else :
 			if i %1000 == 0 :
 				print('starting game ', i, time.time()-startTime)
 				startTime = time.time()
 		done = False
-		player = 'w'
 		epRewardsWhite = 0
 		epRewardsBlack = 0
 		observation = env.reset()
@@ -69,86 +68,52 @@ if __name__ == '__main__':
 
 		while not done:
 
-			if turn > 500 :
+			if turn > 2000 :
 				break
 			rand = np.random.random()
-			# print(rand)
-			if player == 'b' :
-				# print("start AI turn")
-				turn +=1
-				#print()
-				action = maxAction(Qb,observation, env.possibleActions) if rand < (1-EPS) \
-														else env.actionSpaceSample()
 
-				#print("turn: ",turn)
-				#print(action)
+			# print("start AI turn")
+			turn +=1
+			#print()
+			action = maxAction(Qb,observation, env.possibleActions) if rand < (1-EPS) \
+													else env.actionSpaceSample()
 
-				# while not env.checkMove(player,int(action)):
-				# 	epRewardsBlack -= 5
-				# 	action = maxAction(Qb,observation, env.possibleActions) if rand < (1-EPS) \
-				# 											else env.actionSpaceSample()
-				#
-				# 	print(action)
+			#print("turn: ",turn)
+			#print(action)
 
+			observation_, reward, done, info = env.step(int(action),'b')
+			observation_ = stateToString(observation_)
 
-				observation_, reward, done, info = env.step(int(action),player)
-				observation_ = stateToString(observation_)
-				epRewardsBlack += reward
+			if done :
+				AIwins += 1
+				info = False
 
-				action_ = maxAction(Qb, observation_, env.possibleActions)
-				Qb[observation,action] = Qb[observation,action] + ALPHA*(reward + \
-							GAMMA*Qb[observation_,action_] - Qb[observation,action])
-				observation = observation_
+			#env.render()
+			# print()
 
-
-
-				#env.render()
-				# print()
-
-				if info :
-					player = 'w'
-
-				if done :
-					AIwins += 1
-
-
-			else :
+			if info :
 				#Playing randomly
-				action = env.actionSpaceSample()
+				randomAction = env.actionSpaceSample()
 
-				while not env.checkMove(player,int(action)):
-					action = env.actionSpaceSample()
+				while not env.checkMove('w',int(randomAction)):
+					randomAction = env.actionSpaceSample()
 
-				observation, reward, done, info = env.step(int(action),player)
+				observation_, randomReward, randone, randomInfo = env.step(int(randomAction),'w')
+				observation_ = stateToString(observation_)
 
-				# env.render()
-				# print()
-				observation = stateToString(observation)
-
-				# action = maxAction(Qw,observation, env.possibleActions) if rand < (1-EPS) \
-				# 										else env.actionSpaceSample()
-				#
-				# while not env.checkMove(player,int(action)):
-				# 	epRewardsWhite -= 5
-				# 	action = maxAction(Qw,observation, env.possibleActions) if rand < (1-EPS) \
-				# 											else env.actionSpaceSample()
-				#
-				# observation_, reward, done, info = env.step(int(action),player)
-				# epRewardsWhite += reward
-				#
-				# action_ = maxAction(Qw, observation_, env.possibleActions)
-				# Qw[observation,action] = Qw[observation,action] + ALPHA*(reward + \
-				# 			GAMMA*Qw[observation_,action_] - Qw[observation,action])
-				# observation = observation_
-
-				if done :
+				if randone :
 					RandomWins +=1
-
+					reward -= 50
 				turn += 1
-				player = 'b'
 
-		if EPS - 2 / numGames > 0: #exploration rate (plus il y a de games plus la q table est utilisée)
-			EPS -= 2 / numGames
+			epRewardsBlack += reward
+			action_ = maxAction(Qb, observation_, env.possibleActions)
+			Qb[observation,action] = Qb[observation,action] + ALPHA*(reward + \
+						GAMMA*Qb[observation_,action_] - Qb[observation,action])
+			observation = observation_
+
+		if EPS - 2 / 5000 > 0: #exploration rate (plus il y a de games plus la q table est utilisée)
+			EPS -= 2 / 5000
 		else:
 			EPS = 0
 		totalRewardsWhite[i] = epRewardsWhite

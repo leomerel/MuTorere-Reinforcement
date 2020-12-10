@@ -17,7 +17,7 @@ class MuToRere(gym.Env):
 	def __init__(self):
 		self.state = [[Case(7,'w'),Case(8,'w'),Case(9,'w')],[Case(4,'w'),Case(5,'o'),Case(6,'b')],[Case(1,'b'),Case(2,'b'),Case(3,'b')]]
 		self.neighbors = [(4,2),(1,3),(2,6),(1,7),None,(3,9),(4,8),(7,9),(6,8)]
-		self.turn = 'w'
+		self.turn = 'b'
 
 		# Initialisation de la liste des états
 		self.stateSpacePlus = []
@@ -152,7 +152,7 @@ class MuToRere(gym.Env):
 	def reset(self):
 		self.state = [[Case(7,'w'),Case(8,'w'),Case(9,'w')],[Case(4,'w'),Case(5,'o'),Case(6,'b')],[Case(1,'b'),Case(2,'b'),Case(3,'b')]]
 		self.neighbors = [(4,2),(1,3),(2,6),(1,7),None,(3,9),(4,8),(7,9),(6,8)]
-		self.turn = 'w'
+		self.turn = 'b'
 		self.counter = 0
 		self.reward = 0
 		return self.state
