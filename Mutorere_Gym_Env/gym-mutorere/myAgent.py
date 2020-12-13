@@ -43,29 +43,29 @@ if __name__ == '__main__':
 			Qb[stateToString(state), action] = 0
 
 	#storing data to display statistics and graphs in the end
-	totalRewardsBlack = np.zeros(numGames)
-	AIwins = 0
-	RandomWins = 0
+	agentTotalRewards = np.zeros(numGames)
+	agentVictories = 0
+	randomPlayerVictories = 0
 
 	startTime = time.time()
 	for i in range(numGames):
 		if i < 1000 :
 			if i %100 == 0 :
-				print('starting game ', i, time.time()-startTime)
+				print('starting game ', i, " (took ", round(time.time()-startTime,2), "s)", sep = '')
 				startTime = time.time()
 		else :
 			if i %1000 == 0 :
-				print('starting game ', i, time.time()-startTime)
+				print('starting game ', i, " (took ", round(time.time()-startTime,2), "s)", sep = '')
 				startTime = time.time()
 
-		blackVictory = False
-		epRewardsBlack = 0
+		agentWon = False
+		agentEpRewards = 0
 		observation = env.reset()
 		observation = stateToString(observation)
 		turn = 0
 
 
-		while not blackVictory:
+		while not agentWon:
 
 			if turn > 2000 :
 				break
@@ -73,57 +73,57 @@ if __name__ == '__main__':
 
 			# print("start AI turn")
 			turn +=1
-			action = maxAction(Qb,observation, env.possibleActions) if rand < (1-EPS) \
+			agentAction = maxAction(Qb,observation, env.possibleActions) if rand < (1-EPS) \
 													else env.randomAction()
 
-			observation_, blackReward, blackVictory, blackHasPlayed = env.step(int(action),'b')
+			#The agent tries to make a move
+			observation_, agentReward, agentWon, agentHasPlayed = env.step(int(agentAction),'b')
 			observation_ = stateToString(observation_)
 
-			if blackVictory :
-				blackHasPlayed = False
+			if agentHasPlayed and not agentWon:
+				randomPlayerAction = env.randomAction()
 
-			if blackHasPlayed :
-				#Playing randomly
-				randomAction = env.randomAction()
+				while not env.checkMove('w',int(randomPlayerAction)):
+					randomPlayerAction = env.randomAction()
 
-				while not env.checkMove('w',int(randomAction)):
-					randomAction = env.randomAction()
-
-				observation_, randomReward, randone, randomInfo = env.step(int(randomAction),'w')
+				#The random player makes his random move
+				observation_, randomPlayerReward, randomPlayerWon, randomPlayerHasPlayed = env.step(int(randomPlayerAction),'w')
 				observation_ = stateToString(observation_)
 
-				if randone :
-					blackReward -= 50
+				if randomPlayerWon :
+					agentReward -= 50
 				turn += 1
 
-			epRewardsBlack += blackReward
-			action_ = maxAction(Qb, observation_, env.possibleActions)
-			Qb[observation,action] = Qb[observation,action] + ALPHA*(blackReward + \
-						GAMMA*Qb[observation_,action_] - Qb[observation,action])
+			agentEpRewards += agentReward
+
+			#Get the best possible action given the current state (after both players played)
+			agentAction_ = maxAction(Qb, observation_, env.possibleActions)
+
+			#Update the Q-table
+			Qb[observation,agentAction] = Qb[observation,agentAction] + ALPHA*(agentReward + \
+						GAMMA*Qb[observation_,agentAction_] - Qb[observation,agentAction])
+
 			observation = observation_
 
 		if EPS - 2 / 5000 > 0:
 			EPS -= 2 / 5000
 		else:
-			if blackVictory :
-				AIwins += 1
-			elif randone :
-				RandomWins +=1
+			if agentWon :
+				agentVictories += 1
+			elif randomPlayerWon :
+				randomPlayerVictories +=1
 			EPS = 0
 
-		totalRewardsBlack[i] = epRewardsBlack
-		if i % 100 == 0 and i != 0:
-			mean = np.mean(totalRewardsBlack[(i-100):(i)])
+		agentTotalRewards[i] = agentEpRewards
 
-
+	#Display results
 	print()
-	print("AI ", AIwins)
-	print("Random ", RandomWins)
-	print("Winrate ", RandomWins/AIwins if RandomWins!=0 else 100, "%")
+	print("AI won", agentVictories, "times.")
+	print("Random player won", randomPlayerVictories, "times.")
+	print("AI has a winrate of", randomPlayerVictories/agentVictories if randomPlayerVictories!=0 else 100, "%")
 
-
-	plt.plot(totalRewardsBlack[:len(moving_average(totalRewardsBlack,500))], marker='.', linestyle='',label='total reward per epoch')
-	plt.plot(moving_average(totalRewardsBlack,500),label = 'reward mean')
+	plt.plot(agentTotalRewards[:len(moving_average(agentTotalRewards,500))], marker='.', linestyle='',label='total reward per epoch')
+	plt.plot(moving_average(agentTotalRewards,500),label = 'reward mean')
 	plt.legend(loc='center right')
 	plt.xlabel('epoch')
 	plt.ylabel('reward')

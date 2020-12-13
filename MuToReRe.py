@@ -67,6 +67,7 @@ class Board :
 
         case = self.searchCaseById(id)
         if id != 5 :
+            #check where the empty case is (among the current state's 3 neighbors) and then move the player towards it
         	neighbors = (self.searchCaseById(self.neighbors[id-1][0]),self.searchCaseById(self.neighbors[id-1][1]))
 
 
@@ -83,6 +84,7 @@ class Board :
         		case.color = 'o'
 
         else :
+            #check where the empty case is (among the current state's 9 neighbors) and then move the player towards it
         	for row in self.current :
         		for a in row :
         			if a.id != 5 and a.color == 'o' :
@@ -92,8 +94,6 @@ class Board :
 
 
 # Création d'un jeu de Mu Torere à deux joueurs
-
-
 if __name__ == "__main__" :
     board = Board()
     print("Etat initial :")
@@ -122,7 +122,7 @@ if __name__ == "__main__" :
 
             turn += 1
             print()
-            print("Tour n°" + str(turn))
+            print("Turn n°" + str(turn))
             board.show()
             print()
 
