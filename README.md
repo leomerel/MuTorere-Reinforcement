@@ -33,10 +33,13 @@ As we can see, the time it takes for the ia to win the game reduces considerably
 
 ## Results
 In order to evaluate our agent's performance, we used, among other things, the rewards earned in each epoch.
+
 ![Graph of reward per epoch on 10000 games](https://git.enib.fr/t6lepoit/mu-torere-reinforcement/-/raw/master/images/grande_zone.png)
 
 Especially when learning, we can notice the obvious differences between the randomly played turns and those using the Q_table.
+
 ![Graph of reward per epoch on the 2500 learning games](https://git.enib.fr/t6lepoit/mu-torere-reinforcement/-/raw/master/images/apprentissage.png)
 
-Finally, once exploration rate is reduced to a minimum, the agent succeeds in winning all parties. Since the random player does not have many options, it is very easy for our agent to choose the winning strategy. We can still note a few games extending more rounds in this sample of 100 games.
+Finally, once exploration rate is reduced to a minimum, the agent succeeds in winning all parties. Since the random player does not have many options, it is very easy for our agent to choose the winning strategy. We can still note a few games extending more rounds in this sample of 100 games. Thanks to the reward mean, and knowing the agent loose 1 reward per turn but earn 50 when it wins the game, we can tell the average game is finished in 8 turns.
+
 ![Graph of reward per epoch on a sample of 100 games](https://git.enib.fr/t6lepoit/mu-torere-reinforcement/-/raw/master/images/resultats.png)
