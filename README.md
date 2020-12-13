@@ -30,3 +30,13 @@ The AI can be started using this file : [Mutorere_Gym_Env/gym-mutorere/**myAgent
 On start, the agent is learning how to play the game with randomly selected actions for 2500 games.
 
 As we can see, the time it takes for the ia to win the game reduces considerably. The graph displayed at the end of the execution allows you to see the evolution of the rewards earned by the agent over the course of the games.
+
+## Results
+In order to evaluate our agent's performance, we used, among other things, the rewards earned in each epoch.
+![Graph of reward per epoch on 10000 games](https://git.enib.fr/t6lepoit/mu-torere-reinforcement/-/raw/master/images/grande_zone.png)
+
+Especially when learning, we can notice the obvious differences between the randomly played turns and those using the Q_table.
+![Graph of reward per epoch on the 2500 learning games](https://git.enib.fr/t6lepoit/mu-torere-reinforcement/-/raw/master/images/apprentissage.png)
+
+Finally, once exploration rate is reduced to a minimum, the agent succeeds in winning all parties. Since the random player does not have many options, it is very easy for our agent to choose the winning strategy. We can still note a few games extending more rounds in this sample of 100 games.
+![Graph of reward per epoch on a sample of 100 games](https://git.enib.fr/t6lepoit/mu-torere-reinforcement/-/raw/master/images/resultats.png)
