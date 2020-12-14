@@ -3,7 +3,7 @@ Within the scope of an artificial intelligence project in the 5th year of the Na
 
 The Mu Torere is a New Zealand board game. Played by two players, this game is made of 9 knots, 1 empty, 4 white and 4 black.
 
-![initial state of MuTorere board](https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Mu_Torere.svg/1200px-Mu_Torere.svg.png =250x)
+![initial state of MuTorere board](https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Mu_Torere.svg/langfr-1024px-Mu_Torere.svg.png=250x)
 ### Rules
 Each player controls four counters which are initially placed on the board . At the beginning of the game the  middle point is empty. (See illustration.)
 
